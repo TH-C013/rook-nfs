@@ -28,8 +28,8 @@ Clone the git repo and change directory to `rook/cluster/examples/kubernetes/nfs
 
 Create the Operator by deploying the below resources
 
-`kubectl create -f nfs/cluster/examples/kubernetes/nfs/crds.yaml`
-`kubectl create -f nfs/cluster/examples/kubernetes/nfs/operator.yaml`
+`kubectl create -f nfs/crds.yaml`
+`kubectl create -f nfs/operator.yaml`
 
 Validate the operator is up and running
 
@@ -43,7 +43,7 @@ NFS Operator support validating admission webhook which validate the NFSServer o
 
 Prerequisite for installing the admission Webhook is to have Cert-Manager installed. Once this is meet deploy the NFS webhook.
 
-`kubectl create -f nfs/cluster/examples/kubernetes/nfs/webhook.yaml`
+`kubectl create -f nfs/webhook.yaml`
 
 Verify the webhook is up and running
 
@@ -80,7 +80,7 @@ spec:
 
 # Create the NFS CRD
 
-`kubectl create -f nfs/cluster/examples/kubernetes/nfs/nfs.yaml`
+`kubectl create -f nfs/nfs.yaml`
 
 # Consuming the storage
 
@@ -88,7 +88,7 @@ Once the NFS Operator and an instance of NFS Server is deployed.
 Create a storageclass using the example defintion file.
 This allows to dynamically provision volumes.
 
-`kubectl create -f nfs/cluster/examples/kubernetes/nfs/sc.yaml`
+`kubectl create -f nfs/sc.yaml`
 
 # Test the install is successful by deploying the sample app in the test folder
 
