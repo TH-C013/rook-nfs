@@ -26,6 +26,12 @@ Clone the git repo and change directory to `rook/cluster/examples/kubernetes/nfs
     cd rook/cluster/examples/kubernetes/nfs
 ```
 
+Create namespace for the rook-nfs operator
+`k create ns rook-nfs-system`
+
+Create namespace for the rook-nfs server
+`k create ns rook-nfs`
+
 Create the Operator by deploying the below resources
 
 `kubectl create -f nfs/crds.yaml`
@@ -51,13 +57,13 @@ Verify the webhook is up and running
 
 # Create Pod Security Policies
 
-`kubectl create -f nfs/cluster/examples/kubernetes/nfs/psp.yaml`
+`kubectl create -f nfs/psp.yaml`
 
 # Create the required Service Account and roles
 
 NFS Server we need to create ServiceAccount and RBAC rules
 
-`kubectl create -f nfs/cluster/examples/kubernetes/nfs/rbac.yaml`
+`kubectl apply -f nfs/rbac.yaml -n rook-nfs`
 
 # Create and Initialize NFS Server using the Default StorageClass example
 
@@ -75,20 +81,61 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
+      storage: 20Gi
 ```
 
-# Create the NFS CRD
+Update the definition file and change the export name to share instead of share1
+
+```
+apiVersion: nfs.rook.io/v1alpha1
+kind: NFSServer
+metadata:
+  name: rook-nfs
+  namespace: rook-nfs
+spec:
+  replicas: 1
+  exports:
+    - name: share
+      server:
+        accessMode: ReadWrite
+        squash: 'none'
+      # A Persistent Volume Claim must be created before creating NFS CRD instance.
+      persistentVolumeClaim:
+        claimName: nfs-default-claim
+  # A key/value list of annotations
+  annotations:
+    rook: nfs
+
+```
+
+# Create the NFS Server CRD
 
 `kubectl create -f nfs/nfs.yaml`
 
 # Consuming the storage
 
-Once the NFS Operator and an instance of NFS Server is deployed.
-Create a storageclass using the example defintion file.
-This allows to dynamically provision volumes.
+Once the NFS Operator and the NFS Server is deployed you can consume storage in the cluster.
+Update the storageClass parameter exportName to share instead of share1
+
+```
+parameters:
+  exportName: share
+```
+
+Create a storageClass using the example defintion file to dynamically provision volumes.
+This creates a SC with reclaimPolicy: Delete -- Best suited for apps with no data retention
 
 `kubectl create -f nfs/sc.yaml`
+
+This creates a SC with reclaimPolicy: Retain -- Best suited for statefullset
+
+`kubectl create -f nfs/scr.yaml`
+
+# Validate both StorageClasse are created
+
+Remember sc are cluster scoped
+
+`K get sc`
 
 # Test the install is successful by deploying the sample app in the test folder
 

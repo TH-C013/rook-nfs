@@ -23,6 +23,13 @@ spec:
           ports:
             - name: web
               containerPort: 80
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
           volumeMounts:
             # name must match the volume name below
             - name: rook-nfs-vol
